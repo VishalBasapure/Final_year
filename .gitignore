@@ -1,0 +1,10 @@
+.venv/
+venv/
+__pycache__/
+*.pyc
+.vscode/
+.env
+
+*.keras
+
+.DS_Store
