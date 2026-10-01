@@ -1,0 +1,12 @@
+tau,false_alarms_avoided,false_alarms_still_retrained_on,real_detections_kept,real_detections_ignored
+-0.015,0,8,17,0
+-0.005,0,8,14,3
+0.005,7,1,5,12
+0.015,7,1,4,13
+0.025,8,0,4,13
+0.035,8,0,3,14
+0.045,8,0,3,14
+0.055,8,0,1,16
+0.065,8,0,1,16
+0.075,8,0,1,16
+0.085,8,0,0,17
