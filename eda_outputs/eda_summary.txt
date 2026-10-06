@@ -1,0 +1,120 @@
+
+======================================================================
+1. SHAPE OF THE DATA
+======================================================================
+Dataset folder: C:\Users\VISHAL\OneDrive\Desktop\F_project\UCI HAR Dataset
+Train signals: (7352, 128, 9)  (windows, timesteps, channels)
+Test  signals: (2947, 128, 9)
+Window length: 128 samples = 2.56 s at 50 Hz
+Channels (9): ['body_acc_x', 'body_acc_y', 'body_acc_z', 'body_gyro_x', 'body_gyro_y', 'body_gyro_z', 'total_acc_x', 'total_acc_y', 'total_acc_z']
+Train subjects (21): [np.int64(1), np.int64(3), np.int64(5), np.int64(6), np.int64(7), np.int64(8), np.int64(11), np.int64(14), np.int64(15), np.int64(16), np.int64(17), np.int64(19), np.int64(21), np.int64(22), np.int64(23), np.int64(25), np.int64(26), np.int64(27), np.int64(28), np.int64(29), np.int64(30)]
+Test  subjects (9): [np.int64(2), np.int64(4), np.int64(9), np.int64(10), np.int64(12), np.int64(13), np.int64(18), np.int64(20), np.int64(24)]
+Train/test subjects overlap? False (False = split is by subject)
+Classes: {1: 'WALKING', 2: 'UPSTAIRS', 3: 'DOWNSTAIRS', 4: 'SITTING', 5: 'STANDING', 6: 'LAYING'}
+Task type: 6-class CLASSIFICATION
+Precomputed feature file X_train.txt: (7352, 561) (561 hand-made features per window)
+  NaNs in X_train.txt: 0
+
+======================================================================
+2. DATA QUALITY AND PER-CHANNEL STATISTICS
+======================================================================
+NaNs: 0 | Infs: 0
+                min     max    mean     std    skew
+body_acc_x  -1.2322  1.2999 -0.0007  0.1919  1.0452
+body_acc_y  -1.3453  0.9760 -0.0003  0.1219 -1.0501
+body_acc_z  -1.3647  1.0669 -0.0002  0.1038 -0.5782
+body_gyro_x -4.7337  4.1555 -0.0034  0.4039 -0.2408
+body_gyro_y -5.9743  5.7461 -0.0002  0.3705  0.5125
+body_gyro_z -2.7630  2.3660  0.0009  0.2540 -0.5086
+total_acc_x -0.4666  2.1976  0.8083  0.4120 -0.7566
+total_acc_y -1.5882  1.2174  0.0218  0.3973  0.8209
+total_acc_z -1.6396  1.2814  0.0848  0.3443  0.4408
+Units: acc channels are in g (total_acc includes gravity, body_acc has gravity removed), gyro in rad/s.
+Consecutive windows sharing the same 64 samples (50% overlap): 91.7% of pairs
+  -> overlapping windows mean RANDOM k-fold would leak data. Use subject-wise folds.
+
+======================================================================
+3. CLASS BALANCE AND SUBJECTS
+======================================================================
+            train  test  total   pct
+WALKING      1226   496   1722  16.7
+UPSTAIRS     1073   471   1544  15.0
+DOWNSTAIRS    986   420   1406  13.7
+SITTING      1286   491   1777  17.3
+STANDING     1374   532   1906  18.5
+LAYING       1407   537   1944  18.9
+Imbalance ratio (largest/smallest class): 1.38
+Windows per subject: min=281, max=409, mean=343
+
+======================================================================
+4. DYNAMICS (how signals behave over time)
+======================================================================
+           energy        dom_freq_hz       
+             mean    std        mean    std
+activity                                   
+WALKING     0.123  0.026       2.412  1.296
+UPSTAIRS    0.139  0.025       2.437  0.974
+DOWNSTAIRS  0.207  0.037       2.970  1.033
+SITTING     0.013  0.025       1.199  1.464
+STANDING    0.012  0.015       0.994  1.192
+LAYING      0.014  0.031       1.202  1.550
+
+======================================================================
+5. RELATIONSHIPS BETWEEN COLUMNS (channels)
+======================================================================
+             body_acc_x  body_acc_y  body_acc_z  body_gyro_x  body_gyro_y  body_gyro_z  total_acc_x  total_acc_y  total_acc_z
+body_acc_x         1.00       -0.28       -0.22         0.03         0.09        -0.02         0.46        -0.09        -0.07
+body_acc_y        -0.28        1.00        0.15        -0.05        -0.05         0.12        -0.13         0.30         0.05
+body_acc_z        -0.22        0.15        1.00        -0.01        -0.10         0.01        -0.10         0.05         0.29
+body_gyro_x        0.03       -0.05       -0.01         1.00        -0.19        -0.08        -0.00        -0.01         0.01
+body_gyro_y        0.09       -0.05       -0.10        -0.19         1.00         0.09         0.05        -0.02        -0.04
+body_gyro_z       -0.02        0.12        0.01        -0.08         0.09         1.00        -0.04         0.07         0.03
+total_acc_x        0.46       -0.13       -0.10        -0.00         0.05        -0.04         1.00        -0.69        -0.59
+total_acc_y       -0.09        0.30        0.05        -0.01        -0.02         0.07        -0.69         1.00         0.57
+total_acc_z       -0.07        0.05        0.29         0.01        -0.04         0.03        -0.59         0.57         1.00
+Strongest correlated channel pairs:
+  total_acc_x <-> total_acc_y: -0.69
+  total_acc_x <-> total_acc_z: -0.59
+  total_acc_y <-> total_acc_z: 0.57
+  body_acc_x <-> total_acc_x: 0.46
+  body_acc_y <-> total_acc_y: 0.30
+
+======================================================================
+6. SUBJECT-TO-SUBJECT VARIABILITY (why drift exists in your project)
+======================================================================
+Walking energy, mean per subject: min 0.082 max 0.167 (ratio 2.05x)
+Bigger spread between subjects = same activity looks different = drift when the user changes.
+
+======================================================================
+7. WHICH FEATURES MATTER? (quick check, not your CNN)
+======================================================================
+Random forest on 36 summary features, test accuracy: 0.833
+Confusion matrix (rows=true, cols=pred):
+            WALKING  UPSTAIRS  DOWNSTAIRS  SITTING  STANDING  LAYING
+WALKING         355       110          31        0         0       0
+UPSTAIRS        108       351          12        0         0       0
+DOWNSTAIRS       48        45         327        0         0       0
+SITTING           0         2           0      403        86       0
+STANDING          0         0           0       49       483       0
+LAYING            0         0           0        0         0     537
+Top 10 features:
+max_total_acc_x     0.1178
+mean_total_acc_x    0.0964
+mean_total_acc_y    0.0867
+max_body_acc_x      0.0708
+std_total_acc_x     0.0622
+max_total_acc_y     0.0608
+std_body_acc_x      0.0493
+min_total_acc_y     0.0478
+min_total_acc_x     0.0456
+mean_total_acc_z    0.0278
+Importance summed per channel:
+total_acc_x    0.3220
+total_acc_y    0.2105
+body_acc_x     0.1420
+total_acc_z    0.0938
+body_gyro_x    0.0797
+body_gyro_y    0.0473
+body_acc_y     0.0420
+body_gyro_z    0.0400
+body_acc_z     0.0227
