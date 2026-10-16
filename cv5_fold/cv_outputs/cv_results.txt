@@ -1,0 +1,49 @@
+======================================================================
+SUBJECT-WISE 5-FOLD CROSS-VALIDATION (UCI HAR)
+======================================================================
+
+--- FOLD 1 / 5 ---
+Validation Subjects (6): [np.int64(8), np.int64(17), np.int64(23), np.int64(25), np.int64(26), np.int64(30)]
+Train Windows: 8094 | Validation Windows: 2205
+Fold 1 Validation Accuracy: 95.87%
+
+--- FOLD 2 / 5 ---
+Validation Subjects (6): [np.int64(6), np.int64(11), np.int64(20), np.int64(21), np.int64(22), np.int64(27)]
+Train Windows: 8199 | Validation Windows: 2100
+Fold 2 Validation Accuracy: 99.81%
+
+--- FOLD 3 / 5 ---
+Validation Subjects (6): [np.int64(1), np.int64(4), np.int64(7), np.int64(10), np.int64(16), np.int64(19)]
+Train Windows: 8307 | Validation Windows: 1992
+Fold 3 Validation Accuracy: 88.60%
+
+--- FOLD 4 / 5 ---
+Validation Subjects (6): [np.int64(12), np.int64(13), np.int64(15), np.int64(18), np.int64(24), np.int64(29)]
+Train Windows: 8235 | Validation Windows: 2064
+Fold 4 Validation Accuracy: 98.50%
+
+--- FOLD 5 / 5 ---
+Validation Subjects (6): [np.int64(2), np.int64(3), np.int64(5), np.int64(9), np.int64(14), np.int64(28)]
+Train Windows: 8361 | Validation Windows: 1938
+Fold 5 Validation Accuracy: 88.44%
+
+======================================================================
+CROSS-VALIDATION SUMMARY
+======================================================================
+  Fold 1: 95.87%
+  Fold 2: 99.81%
+  Fold 3: 88.60%
+  Fold 4: 98.50%
+  Fold 5: 88.44%
+----------------------------------------------------------------------
+  Mean Accuracy: 94.25% ± 4.84%
+======================================================================
+
+Aggregated Confusion Matrix (Rows=True, Columns=Predicted):
+            WALKING  UPSTAIRS  DOWNSTAIRS  SITTING  STANDING  LAYING
+WALKING        1661        59           2        0         0       0
+UPSTAIRS         12      1502          20       10         0       0
+DOWNSTAIRS        6        12        1388        0         0       0
+SITTING           0         4           0     1583       189       1
+STANDING          0         1           0      261      1644       0
+LAYING            0         0           0        0         0    1944
