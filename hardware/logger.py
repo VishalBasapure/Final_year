@@ -1,83 +1,110 @@
-"""
-logger.py - record ONE labelled session from the ESP32-S3 + MPU6050.
-
-Example:
-    python logger.py --port COM8 --subject 1 --activity WALKING --seconds 120
-
-Close the Arduino Serial Monitor first (only one program can use the port).
-Needs:  pip install pyserial
-"""
-import argparse
-import csv
-import os
-import sys
-import time
+import argparse, csv, os, socket, sys, time
 from datetime import datetime
-
-import serial
 
 ACTIVITIES = ["WALKING", "WALKING_UPSTAIRS", "WALKING_DOWNSTAIRS",
               "SITTING", "STANDING", "LAYING"]
-GAP_MS = 30  # nominal gap is 20 ms; more than 30 ms means we lost a sample
+GAP_MS = 30
 
 
-def open_port(name):
-    ser = serial.Serial()
-    ser.port = name
-    ser.baudrate = 115200
-    ser.timeout = 1
-    ser.dtr = False   # stops the ESP32-S3 from rebooting when the port opens
-    ser.rts = False
-    ser.open()
-    time.sleep(1.0) 
-    ser.reset_input_buffer()
-    return ser
+class SerialLink:
+    def __init__(self, name):
+        import serial
+        ser = serial.Serial()
+        ser.port = name
+        ser.baudrate = 115200
+        ser.timeout = 1
+        ser.dtr = False
+        ser.rts = False
+        ser.open()
+        time.sleep(1.0)
+        ser.reset_input_buffer()
+        self.ser = ser
+
+    def readline(self):
+        return self.ser.readline().decode(errors="ignore").strip()
+
+    def write(self, data):
+        self.ser.write(data)
+
+    def close(self):
+        self.ser.close()
 
 
-def read_line(ser):
-    return ser.readline().decode(errors="ignore").strip()
+class WifiLink:
+    def __init__(self, ip, port):
+        self.sock = socket.create_connection((ip, port), timeout=10)
+        self.sock.settimeout(1.0)
+        self.buf = b""
+
+    def readline(self):
+        while b"\n" not in self.buf:
+            try:
+                chunk = self.sock.recv(4096)
+            except socket.timeout:
+                return ""
+            if not chunk:
+                raise ConnectionError("the board closed the connection")
+            self.buf += chunk
+        line, self.buf = self.buf.split(b"\n", 1)
+        return line.decode(errors="ignore").strip()
+
+    def write(self, data):
+        self.sock.sendall(data)
+
+    def close(self):
+        try:
+            self.sock.close()
+        except OSError:
+            pass
 
 
 def main():
     ap = argparse.ArgumentParser()
-    ap.add_argument("--port", required=True, help="e.g. COM8")
+    where = ap.add_mutually_exclusive_group(required=True)
+    where.add_argument("--port", help="USB serial port, e.g. COM8")
+    where.add_argument("--ip", help="board IP address for WiFi mode")
+    ap.add_argument("--tcp-port", type=int, default=5000)
     ap.add_argument("--subject", type=int, required=True)
     ap.add_argument("--activity", required=True, choices=ACTIVITIES)
     ap.add_argument("--seconds", type=int, default=120)
-    ap.add_argument("--placement", default="waist",
-                    help="tag for where the sensor is worn, used later for drift analysis")
+    ap.add_argument("--placement", default="waist")
     ap.add_argument("--outdir", default="data/raw")
     args = ap.parse_args()
 
-    ser = open_port(args.port)
+    try:
+        link = SerialLink(args.port) if args.port else WifiLink(args.ip, args.tcp_port)
+    except Exception as e:
+        if args.ip:
+            sys.exit(f"Could not reach {args.ip}:{args.tcp_port} ({e}).\n"
+                     "Check: board powered, same WiFi as this laptop, IP typed correctly.")
+        sys.exit(f"Could not open {args.port} ({e}). Is the Serial Monitor closed?")
+
     print(f"Subject {args.subject} | {args.activity} | {args.seconds} s | placement={args.placement}")
-    input("Put the sensor in position, then press Enter. Stay STILL for 2 s after that... ")
+    input("Put the sensor in position, then press Enter... ")
     print("Put the sensor DOWN and let go. Starting in 3 s...")
     for i in (3, 2, 1):
         print(f"  {i}...")
         time.sleep(1)
-    ser.write(b"S")
+
+    link.write(b"S")
     print("Calibrating gyro - hold STILL...")
-    deadline = time.time() + 10
+    deadline = time.time() + 30
     while True:
         if time.time() > deadline:
-            ser.close()
-            sys.exit("No reply from the board. Is the logger sketch uploaded and the Serial Monitor closed?")
-        line = read_line(ser)
+            link.close()
+            sys.exit("No GO from the board. Sketch uploaded? Calibration kept failing?")
+        line = link.readline()
         if line.startswith("#"):
             print("  board:", line)
         if line == "# GO":
             break
 
     print(f"GO! Do {args.activity} now.")
-    rows = []
-    last_t = None
-    gaps = 0
-    next_report = 10000
-    last_rx = time.time()
+    rows, last_t, gaps = [], None, 0
+    next_report, last_rx = 10000, time.time()
     try:
         while True:
-            line = read_line(ser)
+            line = link.readline()
             if not line:
                 if time.time() - last_rx > 5:
                     print("No data for 5 s - stopping.")
@@ -106,9 +133,14 @@ def main():
                 break
     except KeyboardInterrupt:
         print("Stopped early.")
+    except (ConnectionError, OSError) as e:
+        print("Connection lost:", e)
 
-    ser.write(b"X")
-    ser.close()
+    try:
+        link.write(b"X")
+    except Exception:
+        pass
+    link.close()
 
     if len(rows) < 2:
         sys.exit("Almost no data received - nothing saved.")
@@ -116,7 +148,7 @@ def main():
     os.makedirs(args.outdir, exist_ok=True)
     stamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     path = os.path.join(args.outdir,
-                        f"s{args.subject:02d}_{args.activity}_{args.placement}_{stamp}.csv")
+        f"s{args.subject:02d}_{args.activity}_{args.placement}_{stamp}.csv")
     with open(path, "w", newline="") as f:
         w = csv.writer(f)
         w.writerow(["t_ms", "ax_g", "ay_g", "az_g", "gx_rads", "gy_rads", "gz_rads"])
