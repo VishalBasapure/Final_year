@@ -128,7 +128,7 @@ def main():
         json.dump({"offset_g": offset.tolist(), "gain": gain.tolist(),
                    "n_orientations": len(means),
                    "rms_error_after_pct": rms(after)}, f, indent=2)
-    print("saved:", args.out)
+    print("saved:", args.out)a
 
 
 if __name__ == "__main__":

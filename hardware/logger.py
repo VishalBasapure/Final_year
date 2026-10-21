@@ -157,6 +157,9 @@ def main():
     dur = (rows[-1][0] - rows[0][0]) / 1000.0
     rate = (len(rows) - 1) / dur if dur > 0 else 0.0
     mag = [(r[1] ** 2 + r[2] ** 2 + r[3] ** 2) ** 0.5 for r in rows]
+    m = sum(mag) / len(mag)
+    if not 0.9 < m < 1.1:
+        print("WARNING: units look wrong - do NOT use this file, re-record")
     print("\n--- session summary ---")
     print(f"saved      : {path}")
     print(f"samples    : {len(rows)}  ({dur:.1f} s)")
