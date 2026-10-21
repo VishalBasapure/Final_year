@@ -1,8 +1,8 @@
 """Quick quality check for logger.py recordings.
 
 Usage (from the hardware folder):
-    python check_session.py data/raw/*.csv
-    python check_session.py data/raw/*20261105*.csv --ref data/raw_old/s01_STANDING_waist_20261020_232223.csv
+    python check.py data/raw/*.csv
+    python check.py data/raw/*20261105*.csv --ref data/raw/s01_STANDING_waist_20261020_232223.csv
 
 Checks per file: duration, sample rate, gaps, gravity units, and whether the
 motion level fits the activity name (static vs moving).
@@ -10,7 +10,7 @@ With --ref (a static file from an earlier session) it also prints, for files of
 the same activity, how many degrees the mean gravity direction moved, which is a direct measure of how
 much the mount shifted between sessions.
 """
-import argparse, re, sys
+import argparse, glob, re, sys
 import numpy as np
 import pandas as pd
 
@@ -67,7 +67,10 @@ def main():
         ref = d[["ax_g", "ay_g", "az_g"]].values.mean(axis=0)
         rm = NAME.match(a.ref.replace("\\", "/").split("/")[-1])
         ref_act = rm.group(2) if rm else None
-    for f in a.files:
+    files = []
+    for pat in a.files:  # PowerShell does not expand * itself, so do it here
+        files += sorted(glob.glob(pat)) or [pat]
+    for f in files:
         act, mean = check(f, None)
         if ref is not None and act == ref_act:
             print(f"      gravity direction vs ref ({ref_act}): {angle(mean, ref):.1f} deg")
