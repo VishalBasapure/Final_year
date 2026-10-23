@@ -69,7 +69,10 @@ def main():
         ref_act = rm.group(2) if rm else None
     files = []
     for pat in a.files:  # PowerShell does not expand * itself, so do it here
-        files += sorted(glob.glob(pat)) or [pat]
+        hits = sorted(glob.glob(pat))
+        if not hits:
+            sys.exit(f"No files match: {pat}\nCheck the folder and the date in the pattern.")
+        files += hits
     for f in files:
         act, mean = check(f, None)
         if ref is not None and act == ref_act:
