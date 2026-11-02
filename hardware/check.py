@@ -23,6 +23,9 @@ def angle(a, b):
     return float(np.degrees(np.arccos(np.clip(c, -1, 1))))
 
 
+MIN_DUR = 100
+
+
 def check(path, ref_dir):
     name = path.replace("\\", "/").split("/")[-1]
     m = NAME.match(name)
@@ -42,7 +45,7 @@ def check(path, ref_dir):
         msgs.append(f"RATE {rate:.1f} Hz (want 50)")
     if gaps:
         msgs.append(f"{gaps} gaps >30 ms")
-    if dur < 100:
+    if dur < MIN_DUR:
         msgs.append(f"short: {dur:.0f} s")
     s = norm.std()
     if act in STATIC and s > 0.05:
@@ -60,7 +63,11 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("files", nargs="+")
     ap.add_argument("--ref", help="static file from an earlier session")
+    ap.add_argument("--min-dur", type=float, default=100,
+                    help="warn if a file is shorter than this many seconds (use 8 for stored takes)")
     a = ap.parse_args()
+    global MIN_DUR
+    MIN_DUR = a.min_dur
     ref = None
     if a.ref:
         d = pd.read_csv(a.ref)
